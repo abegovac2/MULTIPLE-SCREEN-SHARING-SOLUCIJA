@@ -7,8 +7,8 @@ userRouter.post("/register", userController.register);
 userRouter.post("/login", userController.login);
 userRouter.get("/list", userController.getAllUsers);
 userRouter.route("/")
-    .get(userController.getUser)
-    .delete(userController.deleteUser);
+	.get(userController.getUser)
+	.delete(userController.deleteUser);
 
 
 

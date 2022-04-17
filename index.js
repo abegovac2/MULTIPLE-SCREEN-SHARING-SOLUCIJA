@@ -18,10 +18,10 @@ app.use("/meets", meetManagement);
 
 
 sequelize
-  .sync({ forice: true })
-  .then(() => app.listen(process.env.PORT))
-  .catch((err) => {
-    console.log(err);
-  });
+	.sync({ forice: true })
+	.then(() => app.listen(process.env.PORT))
+	.catch((err) => {
+		console.log(err);
+	});
 
 module.exports = app;
