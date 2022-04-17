@@ -4,107 +4,136 @@ const fs = require("fs");
 
 const createMeetController = (() => {
 
-  const formatMeetObj = (meet) => {
-    meet.passwordProtected = meetInfo.studentPassword || meetInfo.teacherPassword;
-    delete meet.studentPassword;
-    delete meet.teacherPassword;
-    return meet
-  }
+	const formatMeetObj = (meet) => {
+		meet.passwordProtected = meetInfo.studentPassword || meetInfo.teacherPassword;
+		delete meet.studentPassword;
+		delete meet.teacherPassword;
+		return meet
+	}
 
-  const createMeet = async (req, res) => {
-    let meet = req.body;
+	const createMeet = async (req, res) => {
+		let meet = req.body;
 
-    meet.startTime = Date.now();
+		meet.startTime = Date.now();
 
-    try {
+		try {
 
-      meet.studentPassword = await bcrypt.hash(meet.studentPassword ?? "", 10);
-      meet.teacherPassword = await bcrypt.hash(meet.teacherPassword ?? "", 10);
+			meet.studentPassword = await bcrypt.hash(meet.studentPassword ?? "", 10);
+			meet.teacherPassword = await bcrypt.hash(meet.teacherPassword ?? "", 10);
 
-      try {
-        let newMeet = await Meet.create(meet);
-        res.send(201).send(newMeet);
-      } catch (e) {
-        res.status(400).send({ message: "Meet already exists!" });
-      }
-    } catch (e) {
-      res.status(500).send({ message: "Internal server error" });
+			try {
+				let newMeet = await Meet.create(meet);
+				res.send(201).send(newMeet);
+			} catch (e) {
+				res.status(400).send({ message: "Meet already exists!" });
+			}
+		} catch (e) {
+			res.status(500).send({ message: "Internal server error" });
 
-    }
-  }
+		}
+	}
 
-  const getAllMeets = async (req, res) => {
-    try {
-      let allMeets = await Meet.findAll({
-        attributes: ['meetName', 'subject', 'createdBy']
-      });
-      res.status(200).send({ allMeets: allMeets });
-    } catch (e) {
-      res.status(500).send({ message: "Internal server error" });
-    }
-  }
+	const getAllMeets = async (req, res) => {
+		try {
+			let allMeets = await Meet.findAll({
+				attributes: ['meetName', 'subject', 'createdBy']
+			});
+			res.status(200).send({ allMeets: allMeets });
+		} catch (e) {
+			res.status(500).send({ message: "Internal server error" });
+		}
+	}
 
-  const getMeetInfo = async (req, res) => {
-    try {
-      let { meetName } = req.body;
-      let meetInfo = await Meet.findOne({ where: { meetName: meetName } });
-      meetInfo = formatMeetObj(meetInfo);
-      res.status(200).send({ meetInfo: meetInfo });
-    } catch (e) {
-      res.status(500).send({ message: "Internal server error" });
-    }
-  }
+	const getMeetInfo = async (req, res) => {
+		try {
+			let { meetName } = req.body;
+			let meetInfo = await Meet.findOne({ where: { meetName: meetName } });
+			meetInfo = formatMeetObj(meetInfo);
+			res.status(200).send({ meetInfo: meetInfo });
+		} catch (e) {
+			res.status(500).send({ message: "Internal server error" });
+		}
+	}
 
-  const configurationChek = (file, passwordInput, passwordMeet, meet, res) => {
-    if (await bcrypt.compare(passwordInput, passwordMeet)) {
-      fs.readFile(`../setupData/${file}`, "utf8", (err, setup) => {
-        if (err)
-          res.status(500).send({ message: "Internal server error" });
-        else
-          res.status(200).send({ meet: formatMeetObj(meet), setup: JSON.parse(setup) });
+	const configurationChek = (file, passwordInput, passwordMeet, meet, res) => {
+		if (await bcrypt.compare(passwordInput, passwordMeet)) {
+			fs.readFile(`../setupData/${file}`, "utf8", (err, setup) => {
+				if (err)
+					res.status(500).send({ message: "Internal server error" });
+				else
+					res.status(200).send({ meet: formatMeetObj(meet), setup: JSON.parse(setup) });
 
-      });
-    }else res.status(400).send({message: "Invalid password"});
-  }
+			});
+		} else res.status(400).send({ message: "Invalid password" });
+	}
 
-  const enterMeet = async (req, res) => {
-    const { meetName, studentPassword, teacherPassword } = req.body;
+	const enterMeet = async (req, res) => {
+		const { meetName, studentPassword, teacherPassword } = req.body;
 
-    try {
-      let meet = await Meet.findOne({ where: { meetName: meetName } });
+		try {
+			let meet = await Meet.findOne({ where: { meetName: meetName } });
 
-      if (!meet) {
-        res.status(404).send({ message: `Meet named ${meetName} does not exist.` });
-        return;
-      }
+			if (!meet) {
+				res.status(404).send({ message: `Meet named ${meetName} does not exist.` });
+				return;
+			}
 
-      if (meet.endDate <= Date.now()) {
-        res.status(409).send({ message: `Meet named ${meetName} has finished at ${meet.endDate}.` });
-        return;
-      }
+			if (meet.endDate != null) {
+				res.status(409).send({ message: `Meet named ${meetName} has finished at ${meet.endDate}.` });
+				return;
+			}
 
-      if (studentPassword)
-        configurationChek('studentMeet', studentPassword, meet.studentPassword, meet, res);
-      else if (teacherPassword)
-        configurationChek('teacherMeet', teacherPassword, meet.teacherPassword, meet, res);
+			if (studentPassword)
+				configurationChek('studentMeet', studentPassword, meet.studentPassword, meet, res);
+			else if (teacherPassword)
+				configurationChek('teacherMeet', teacherPassword, meet.teacherPassword, meet, res);
+			else throw "error";
 
-    } catch (e) {
-      res.status(500).send({ message: "Internal server error" });
-    }
-  }
+		} catch (e) {
+			res.status(500).send({ message: "Internal server error" });
+		}
+	}
 
-  const endMeet = (req, res) => {
-    const { meetName, teacherPassword } = req.body;
+	const endMeet = (req, res) => {
+		const { meetName, teacherPassword } = req.body;
+		try {
+			let meet = await Meet.findOne({ where: { meetName: meetName } });
 
-  }
+			if (!meet) {
+				res.status(404).send({ message: `Meet named ${meetName} does not exist.` });
+				return;
+			}
 
-  return {
-    createMeet,
-    getAllMeets,
-    getMeetInfo,
-    enterMeet,
-    endMeet
-  };
+			if (meet.endDate != null) {
+				res.status(409).send({ message: `Meet named ${meetName} has finished at ${meet.endDate}.` });
+				return;
+			}
+
+			if (!await bcrypt.compare(teacherPassword, meet.teacherPassword)) {
+				res.status(400).send({ message: `Incorrect password for meet: ${meetName}` });
+				return;
+			}
+
+			meet.endDate = Date.now();
+
+			await Meet.update(meet, {
+				where: {
+					id: meet.id
+				}
+			});
+
+		} catch (e) {
+			res.status(500).send({ message: "Internal server error" });
+		}
+	}
+
+	return {
+		createMeet,
+		getAllMeets,
+		getMeetInfo,
+		enterMeet,
+		endMeet
+	};
 })();
 
 module.exports = createMeetController;
