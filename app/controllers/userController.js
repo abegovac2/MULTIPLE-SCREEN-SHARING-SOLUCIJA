@@ -5,16 +5,17 @@ const { Op } = require("sequelize");
 const User = require("../models/user.js");
 
 const userController = (() => {
-    const wrapErrorsFunction = (foo) => {
-        return async (req, res) => {
-            try{
-                await foo(req, res);
-            }catch(e){
-                console.log(`SERVER ERROR ${e}`);
-                res.status(500).send({ message: "Internal server error" });
-            }
-        }
-    }
+	
+	const wrapErrorsFunction = (foo) => {
+		return async (req, res) => {
+			try {
+				await foo(req, res);
+			} catch (e) {
+				console.log(`SERVER ERROR ${e}`);
+				res.status(500).send({ message: "Internal server error" });
+			}
+		}
+	}
 
 	const userPropCheck = (user, res) => {
 		let result = !['userName', 'email', 'password'].every(el => el in user);
@@ -22,65 +23,48 @@ const userController = (() => {
 		return result;
 	}
 
-	const register = async (req, res) => {
-		let user = req.body;
+	const findUserInDB = async (user, res) => {
+		let dbUser = await User.findOne({
+			where: {
+				userName: user.userName,
+				[Op.or]: {
+					email: user.email,
+				},
+			},
+		});
 
-		if (userPropCheck(user, res)) return;
-
-		try {
-			const hashPassword = await bcrypt.hash(user.password, 10);
-			user.password = hashPassword;
-			try {
-				await User.create(user);
-                res.status(201).send({userName: user.userName,});
-			} catch (e) {
-				res.status(409).send(
-					{
-						userName: `User with username: '${user.userName}' already exist!`,
-					}
-				);
-			}
-		} catch(e) {
-            console.log(`SERVER ERROR ${e}`);
-			res.status(500).send({ message: "Internal server error" });
-		}
+		return dbUser || res.status(404).send({ message: `Querried user, ${user.userName}, does not exist!` });
 	}
 
-    const findUserInDB = async (user, res) =>{
-        let dbUser = await User.findOne({
-            where: {
-                userName: user.userName,
-                [Op.or]: {
-                    email: user.email,
-                },
-            },
-        });
-
-        return dbUser || res.status(404).send({ message: `Querried user, ${user.userName}, does not exist!` });
-    }
+	const register = async (req, res) => {
+		let user = req.body;
+		if (userPropCheck(user, res)) return;
+		const hashPassword = await bcrypt.hash(user.password, 10);
+		user.password = hashPassword;
+		try {
+			await User.create(user);
+			res.status(201).send({ userName: user.userName, });
+		} catch (e) {
+			res.status(409).send({ userName: `User with username: '${user.userName}' already exist!`, });
+		}
+	}
 
 	const login = async (req, res) => {
 		let inUser = req.body;
 
-		if (!(('userName' in inUser || 'email' in inUser) && 'password' in inUser)){ 
-            res.status(400).send({ message: "Invalid input data for route" });
-            return;
-        }
-
-		try {
-           let dbUser = findUserInDB(inUser, res);
-			if (dbUser) return;
-
-			if (await bcrypt.compare(inUser.password, dbUser.password)) {
-				inUser.id = dbUser.id;
-				inUser.password = dbUser.password;
-				let token = tokenAuth.create(inUser);
-				res.status(200).send({ token: token, user: dbUser });
-			} else res.status(409).send({ message: "Unsuccessful login" });
-		} catch (e) {
-            console.log(`SERVER ERROR ${e}`);
-			res.status(500).send({ message: "Internal server error" });
+		if (!(('userName' in inUser || 'email' in inUser) && 'password' in inUser)) {
+			res.status(400).send({ message: "Invalid input data for route" });
+			return;
 		}
+		let dbUser = findUserInDB(inUser, res);
+		if (dbUser) return;
+
+		if (await bcrypt.compare(inUser.password, dbUser.password)) {
+			inUser.id = dbUser.id;
+			inUser.password = dbUser.password;
+			let token = tokenAuth.create(inUser);
+			res.status(200).send({ token: token, user: dbUser });
+		} else res.status(409).send({ message: "Unsuccessful login" });
 	};
 
 	const deleteUser = async (req, res) => {
@@ -91,7 +75,7 @@ const userController = (() => {
 		if (userPropCheck(inUser, res)) return;
 
 		try {
-            let dbUser = findUserInDB(inUser, res);
+			let dbUser = findUserInDB(inUser, res);
 			if (dbUser) return;
 
 			if (await bcrypt.compare(inUser.password, dbUser.password)) {
@@ -117,42 +101,37 @@ const userController = (() => {
 
 	const getUser = async (req, res) => {
 		let inUser = req.body;
-        let isGood = false;
-        ['email', 'userName'].forEach(el => {
-            if(!(el in inUser)) inUser[el] = '';
-            else isGood = true;
-        });
-        if(!isGood){
+		let isGood = false;
+		['email', 'userName'].forEach(el => {
+			if (!(el in inUser)) inUser[el] = '';
+			else isGood = true;
+		});
+		if (!isGood) {
 			res.status(400).send({ message: "Invalid input data for route" });
-            return;
-        }
-
-		try {
-			let dbUser = findUserInDB(inUser, res);
-			if (dbUser) return;
-
-			res.status(200).send(dbUser);
-		} catch (e) {
-            console.log(`SERVER ERROR ${e}`);
-			res.status(500).send({ message: "Internal server error" });
+			return;
 		}
+
+		let dbUser = findUserInDB(inUser, res);
+		if (dbUser) return;
+
+		res.status(200).send(dbUser);
 	};
 
 	const getAllUsers = async (req, res) => {
-		try {
-			let allUser = await User.findAll({
-				attributes: ['userName']
-			});
-			res.status(200).send({ allUsers: allUser.map(el => el.userName) });
-		} catch (e) {
-            console.log(`SERVER ERROR ${e}`);
-			res.status(500).send({ message: "Internal server error" });
-		}
+		let allUser = await User.findAll({
+			attributes: ['userName']
+		});
+		res.status(200).send({ allUsers: allUser.map(el => el.userName) });
 	}
 
-    const returnObj = {};
-	[register, login, deleteUser, getUser, getAllUsers].forEach(foo => returnObj[foo.name] = foo);//wrapErrorsFunction(foo));
-    return returnObj;
+
+	return [
+		register,
+		login,
+		deleteUser,
+		getUser,
+		getAllUsers
+	].reduce((obj, curr) => ({ ...obj, [curr.name]: wrapErrorsFunction(curr) }), {});
 })();
 
 module.exports = userController;
