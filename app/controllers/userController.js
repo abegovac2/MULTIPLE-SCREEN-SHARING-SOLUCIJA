@@ -1,21 +1,11 @@
 const bcrypt = require("bcrypt");
 const tokenAuth = require("../middleware/tokenAuth.js");
+const routeWrappers = require("../utils/routeWrappers.js");
 const { Op } = require("sequelize");
 
 const User = require("../models/user.js");
 
 const userController = (() => {
-	
-	const wrapErrorsFunction = (foo) => {
-		return async (req, res) => {
-			try {
-				await foo(req, res);
-			} catch (e) {
-				console.log(`SERVER ERROR ${e}`);
-				res.status(500).send({ message: "Internal server error" });
-			}
-		}
-	}
 
 	const userPropCheck = (user, res) => {
 		let result = !['userName', 'email', 'password'].every(el => el in user);
@@ -87,8 +77,7 @@ const userController = (() => {
 						},
 					},
 				});
-				res
-					.status(200)
+				res.status(200)
 					.send({ message: `Successfuly deleted user ${userName}` });
 			}
 		} catch (e) {
@@ -131,7 +120,7 @@ const userController = (() => {
 		deleteUser,
 		getUser,
 		getAllUsers
-	].reduce((obj, curr) => ({ ...obj, [curr.name]: wrapErrorsFunction(curr) }), {});
+	].reduce((obj, curr) => ({ ...obj, [curr.name]: routeWrappers.serverErrorWrap(curr) }), {});
 })();
 
 module.exports = userController;
