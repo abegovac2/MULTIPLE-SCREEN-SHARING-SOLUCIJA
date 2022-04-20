@@ -55,8 +55,9 @@ const createMeetController = (() => {
 		}
 	}
 
-	const configurationChek = (file, passwordInput, passwordMeet, meet, res) => {
-		if (await bcrypt.compare(passwordInput, passwordMeet)) {
+	const configurationCheck = async (file, passwordInput, passwordMeet, meet, res) => {
+        let isValid = await bcrypt.compare(passwordInput, passwordMeet); 
+		if (isValid) {
 			fs.readFile(`../setupData/${file}`, "utf8", (err, setup) => {
 				if (err)
 					res.status(500).send({ message: "Internal server error" });
@@ -84,9 +85,9 @@ const createMeetController = (() => {
 			}
 
 			if (studentPassword)
-				configurationChek('studentMeet', studentPassword, meet.studentPassword, meet, res);
+				configurationCheck('studentMeet', studentPassword, meet.studentPassword, meet, res);
 			else if (teacherPassword)
-				configurationChek('teacherMeet', teacherPassword, meet.teacherPassword, meet, res);
+				configurationCheck('teacherMeet', teacherPassword, meet.teacherPassword, meet, res);
 			else throw "error";
 
 		} catch (e) {
@@ -94,7 +95,7 @@ const createMeetController = (() => {
 		}
 	}
 
-	const endMeet = (req, res) => {
+	const endMeet = async (req, res) => {
 		const { meetName, teacherPassword } = req.body;
 		try {
 			let meet = await Meet.findOne({ where: { meetName: meetName } });

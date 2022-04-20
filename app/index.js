@@ -9,17 +9,17 @@ const userRoute = require("./routes/userRoute.js");
 const meetManagement = require("./routes/meetManagementRoute.js");
 
 app.use(bodyParser.json());
-app.use(tokenAuth.auth);
 
 require('dotenv').config()
 
+app.use(tokenAuth.auth);
 app.use("/user", userRoute);
 app.use("/meets", meetManagement);
 
 
 sequelize
 	.sync({ forice: true })
-	.then(() => app.listen(process.env.PORT))
+	.then(() => app.listen(process.env.NODE_DOCKER_PORT))
 	.catch((err) => {
 		console.log(err);
 	});
