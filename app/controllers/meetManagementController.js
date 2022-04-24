@@ -1,7 +1,6 @@
 const Meet = require("../models/meet.js");
 const routeWrappers = require("../utils/routeWrappers.js");
 const bcrypt = require("bcrypt");
-const { Op } = require("sequelize");
 const fs = require("fs");
 
 const createMeetController = (() => {
@@ -56,7 +55,7 @@ const createMeetController = (() => {
 		if (isValid) {
 			fs.readFile(`../setupData/${file}`, "utf8", (err, setup) => {
 				if (err)
-					throw err; //res.status(500).send({ message: "Internal server error" });
+					throw "Failed to read setup data"; //res.status(500).send({ message: "Internal server error" });
 				else
 					res
 						.status(200)
