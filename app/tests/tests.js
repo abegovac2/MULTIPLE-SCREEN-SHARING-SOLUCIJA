@@ -49,17 +49,7 @@ const meetRoutes = [
 
 let token = '';
 
-const userControllerTest = () => {
-	before(async () => {
-		await resetTables();
-		await createMultipleUsers();
-	});
-
-	beforeEach(function (done) {
-		this.timeout(10000)
-		done();
-	});
-
+const allRouteTests = () => {
 	it("Access without token", function (done) {
 		const routes = [...userRoutes, ...meetRoutes];
 		for (let i = 2; i < routes.length; ++i)
@@ -71,7 +61,7 @@ const userControllerTest = () => {
 					assert.equal(res.status, 401);
 					assert.equal(res.text, '{"message":"A token is required for authentication"}');
 					if (i == routes.length - 1) done();
-				})
+				});
 	});
 
 	it("Access with invalid token", function (done) {
@@ -85,7 +75,34 @@ const userControllerTest = () => {
 					assert.equal(res.status, 401);
 					assert.equal(res.text, '{"message":"Invalid Token"}');
 					if (i == routes.length - 1) done();
-				})
+				});
+	});
+
+	it("Invalid data for user routes", function (done) {
+		let input = {
+			token: token
+		};
+		const routes = [...userRoutes, ...meetRoutes];
+		const noDataForRoutes = [2, 8];
+		for (let i = 0; i < routes.length; ++i)
+			if (!noDataForRoutes.includes(i))
+				chai.request(server)[routes[i].method](routes[i].path)
+					.set("content-type", "application/json")
+					.send(input)
+					.end((err, res) => {
+						assert.isNull(err);
+						assert.equal(res.status, 400);
+						assert.equal(res.text, `{"message":"Invalid input data for route"}`);
+						if (i == routes.length - 1) done();
+					});
+
+	});
+}
+
+const userControllerTest = () => {
+	before(async () => {
+		await resetTables();
+		await createMultipleUsers();
 	});
 
 	it("Register invalid props", function (done) {
@@ -272,6 +289,24 @@ const userControllerTest = () => {
 			});
 	});
 
+	it("Get nonexisting user", function (done) {
+		let input = {
+			token: token,
+			userName: "Fahrudin",
+			password: "netacna sifra"
+		};
+		chai.request(server)
+			.delete("/user")
+			.set("content-type", "application/json")
+			.send(input)
+			.end((err, res) => {
+				assert.isNull(err);
+				assert.equal(res.status, 404);
+				assert.equal(res.text, `{"message":"Querried user, Fahrudin, does not exist!"}`);
+				done();
+			});
+	});
+
 	it("Delete user by userName", function (done) {
 		let input = {
 			token: token,
@@ -329,6 +364,114 @@ const userControllerTest = () => {
 
 }
 
+const meetControllerTest = () => {
+	it("Invalid create meet parameters", function (done) {
+		let input = [{
+			token: token,
+		}, {
+			token: token,
+			meetName: 'Prva parcijala',
+		}, {
+			token: token,
+			createdBy: 'Suljo'
+		}, {
+			token: token,
+			subject: 'Razvoj programskih rijesenja',
+		}, {
+			token: token,
+			subject: 'Razvoj programskih rijesenja',
+			createdBy: 'Suljo'
+		}, {
+			token: token,
+			meetName: 'Prva parcijala',
+			createdBy: 'Suljo'
+		}, {
+			token: token,
+			meetName: 'Prva parcijala',
+			subject: 'Razvoj programskih rijesenja',
+		}];
+		for (let i = 0; i < input.length; ++i)
+			chai.request(server)
+				.post("/meet")
+				.set("content-type", "application/json")
+				.send(input[i])
+				.end((err, res) => {
+					assert.isNull(err);
+					assert.equal(res.text, `{"message":"Invalid input data for route"}`);
+					assert.equal(res.status, 400);
+					if (i == input.length - 1) done();
+				});
+	});
+
+	it("Valid meet create", function (done) {
+		let input = {
+			token: token,
+			meetName: 'Prva parcijala',
+			subject: 'Razvoj programskih rijesenja',
+			createdBy: 'Amar'
+		};
+		chai.request(server)
+			.post("/meet")
+			.set("content-type", "application/json")
+			.send(input)
+			.end((err, res) => {
+				assert.isNull(err);
+				let obj = JSON.parse(res.text);
+				assert.equal(obj.meetName, input.meetName);
+				assert.equal(obj.subject, input.subject);
+				assert.equal(obj.createdBy, input.createdBy);
+				assert.equal(res.status, 201);
+				done();
+			});
+	});
+
+	it("Valid meet get", function (done) {
+		let input = {
+			token: token,
+			meetName: 'Prva parcijala',
+		};
+		chai.request(server)
+			.get("/meet")
+			.set("content-type", "application/json")
+			.send(input)
+			.end((err, res) => {
+				assert.isNull(err);
+				let obj = JSON.parse(res.text).meetInfo;
+				let r = {
+					meetName: 'Prva parcijala',
+					subject: 'Razvoj programskih rijesenja',
+					createdBy: 'Amar'
+				};
+				assert.equal(obj.meetName, r.meetName);
+				assert.equal(obj.subject, r.subject);
+				assert.equal(obj.createdBy, r.createdBy);
+				assert.equal(res.status, 200);
+				done();
+			});
+	});
+
+	it("Invalid meet get", function (done) {
+		let input = {
+			token: token,
+			meetName: 'Otorinolaringologija',
+		};
+		chai.request(server)
+			.get("/meet")
+			.set("content-type", "application/json")
+			.send(input)
+			.end((err, res) => {
+				assert.isNull(err);
+				assert.equal(res.text, '{"message":"Meet named Otorinolaringologija does not exist."}')
+				assert.equal(res.status, 404);
+				done();
+			});
+	});
+
+
+}
+
 describe("Route tests", function () {
 	describe("User test", userControllerTest);
+	describe("Meet test", meetControllerTest);
+	describe("Default route tests", allRouteTests);
 });

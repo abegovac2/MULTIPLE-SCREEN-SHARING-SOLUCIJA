@@ -14,7 +14,7 @@ require('dotenv').config()
 
 app.use(tokenAuth.auth);
 app.use("/user", userRoute);
-app.use("/meets", meetManagement);
+app.use("/meet", meetManagement);
 
 
 sequelize
