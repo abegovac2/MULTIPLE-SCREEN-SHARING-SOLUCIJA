@@ -1,5 +1,5 @@
 FROM node:alpine
-COPY . ./app
-WORKDIR /app
+COPY . ./backend
+WORKDIR /backend
 RUN [ "npm", "install" ]
 CMD [ "npm", "start" ]
