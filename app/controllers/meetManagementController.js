@@ -1,6 +1,7 @@
 const Meet = require("../models/meet.js");
 const routeWrappers = require("../utils/routeWrappers.js");
 const bcrypt = require("bcrypt");
+const { Op } = require("sequelize");
 const fs = require("fs");
 
 const createMeetController = (() => {
@@ -30,17 +31,20 @@ const createMeetController = (() => {
 		meet.teacherPassword = meet.teacherPassword ? await bcrypt.hash(meet.teacherPassword, 10) : null;
 
 		if (meet.studentPassword && !meet.teacherPassword) {
-			res.send(400).send({ message: "You can't make a meet with a student password and no teacher password." });
+			res.status(400).send({ message: "You can't make a meet with a student password and no teacher password." });
 			return;
 		}
 		delete meet.token;
 		let newMeet = await Meet.findOrCreate({
 			where: {
-				meetName: meet.meetName,
+				[Op.and]: [
+					{ meetName: meet.meetName },
+					{ subject: meet.subject }
+				]
 			},
 			defaults: meet,
 		});
-		if (newMeet[1]) res.status(201).send(newMeet[0].dataValues);
+		if (newMeet[1]) res.status(201).send(formatMeetObj(newMeet[0].dataValues));
 		else res.status(400).send({ message: "Meet already exists!" });
 	};
 
@@ -52,12 +56,11 @@ const createMeetController = (() => {
 	};
 
 	const getMeetInfo = async (req, res) => {
-		let { meetName } = req.body;
+		const { meetName, subject } = req.body;
 
-		if (!meetPropData(['meetName'], req.body, res)) return;
+		if (!meetPropData(['meetName', 'subject'], req.body, res)) return;
 
-		//let meetInfo = await Meet.findOne({ where: { meetName: meetName } });
-		let meetInfo = await meetExitsAndFinishedCheck(meetName, res, false);
+		let meetInfo = await meetExitsAndFinishedCheck(meetName, subject, res, false);
 		if (!meetInfo) return;
 		meetInfo = formatMeetObj(meetInfo.dataValues);
 		res.status(200).send({ meetInfo: meetInfo });
@@ -71,30 +74,33 @@ const createMeetController = (() => {
 		res,
 		ignorePass = false
 	) => {
-		let isValid = ignorePass || await bcrypt.compare(passwordInput, passwordMeet);
-		if (isValid) {
-			fs.readFile(`../setupData/${file}`, "utf8", (err, setup) => {
-				if (err)
-					throw "Failed to read setup data";
-				else
-					res
-						.status(200)
-						.send({ meet: formatMeetObj(meet), setup: JSON.parse(setup) });
-			});
+		let isValid = await bcrypt.compare(passwordInput, passwordMeet);
+		if (ignorePass || isValid) {
+			let setup = require(`./setupData/${file}.js`);
+			meet = formatMeetObj(meet.dataValues);
+			res
+				.status(200)
+				.send({ meet: meet, setup: setup });
 		} else res.status(400).send({ message: "Invalid password" });
 	};
 
-	const meetExitsAndFinishedCheck = async (meetName, res, checkEndDate = true) => {
-		let meet = await Meet.findOne({ where: { meetName: meetName } });
+	const meetExitsAndFinishedCheck = async (meetName, subject, res, checkEndDate = true) => {
+		let meet = await Meet.findOne({
+			where: {
+				[Op.and]: [
+					{ meetName: meetName },
+					{ subject: subject }]
+			}
+		});
 
 		if (!meet) {
 			res
 				.status(404)
 				.send({ message: `Meet named ${meetName} does not exist.` });
 			return null;
-		} else if (checkEndDate && !meet.endDate) {
+		} else if (checkEndDate && !!meet.endTime) {
 			res.status(409).send({
-				message: `Meet named ${meetName} has finished at ${meet.endDate}.`,
+				message: `Meet named ${meetName} has finished at ${formatDateToString(meet.endTime)}.`,
 			});
 			return null;
 		}
@@ -103,15 +109,15 @@ const createMeetController = (() => {
 	}
 
 	const enterMeet = async (req, res) => {
-		const { meetName, studentPassword, teacherPassword } = req.body;
+		const { meetName, subject, studentPassword, teacherPassword } = req.body;
 
 		if (!meetPropData(['meetName'], req.body, res)) return;
 
-		let meet = meetExitsAndFinishedCheck(meetName, res);
+		let meet = await meetExitsAndFinishedCheck(meetName, subject, res);
 		if (!meet) return;
 
 		if (meet.studentPassword && studentPassword)
-			configurationCheck(
+			await configurationCheck(
 				"studentMeet",
 				studentPassword,
 				meet.studentPassword,
@@ -119,7 +125,7 @@ const createMeetController = (() => {
 				res
 			);
 		else if (meet.teacherPassword && teacherPassword)
-			configurationCheck(
+			await configurationCheck(
 				"teacherMeet",
 				teacherPassword,
 				meet.teacherPassword,
@@ -129,7 +135,7 @@ const createMeetController = (() => {
 		else if ([
 			meet.teacherPassword, studentPassword, meet.studentPassword, teacherPassword
 		].every(el => !el))
-			configurationCheck(
+			await configurationCheck(
 				"teacherMeet",
 				'',
 				'',
@@ -144,11 +150,15 @@ const createMeetController = (() => {
 
 	};
 
+	const formatDateToString = (date) => {
+		let end = new Date(date);
+		return `${end.getFullYear()}-${end.getMonth()}-${end.getDate()} ${end.getHours()}:${end.getMinutes()}:${end.getSeconds()}`
+	}
 	const endMeet = async (req, res) => {
-		const { meetName, teacherPassword } = req.body;
+		const { meetName, subject, teacherPassword } = req.body;
 
-		if (!meetPropData(['meetName', 'teacherPassword'], req.body, res)) return;
-		let meet = meetExitsAndFinishedCheck(meetName, res);
+		if (!meetPropData(['meetName', 'subject', 'teacherPassword'], req.body, res)) return;
+		let meet = await meetExitsAndFinishedCheck(meetName, subject, res);
 		if (!meet) return;
 
 		if (!(await bcrypt.compare(teacherPassword, meet.teacherPassword))) {
@@ -158,16 +168,11 @@ const createMeetController = (() => {
 			return;
 		}
 
-		meet.endDate = Date.now();
+		meet.endTime = Date.now();
 
-		await Meet.update(meet, {
-			where: {
-				id: meet.id,
-			},
-		});
-
+		await meet.save();
 		res.status(201).send({
-			message: `Meet ${meet.meetName} has finished at ${meet.endDate}.`,
+			message: `Meet ${meet.meetName} has finished at ${formatDateToString(meet.endTime)}.`,
 		});
 	};
 

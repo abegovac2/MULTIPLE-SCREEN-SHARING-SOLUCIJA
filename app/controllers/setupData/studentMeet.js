@@ -1,4 +1,4 @@
-{
+module.exports = JSON.parse(`{
     "configOverwrite": {
         "startWithAudioMuted": true,
         "disableModeratorIndicator": true,
@@ -29,4 +29,4 @@
     "DISABLE_JOIN_LEAVE_NOTIFICATIONS": true,
     "FILM_STRIP_MAX_HEIGHT": 0
   }
-}
+}`);

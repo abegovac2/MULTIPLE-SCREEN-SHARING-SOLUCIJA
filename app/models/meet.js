@@ -12,7 +12,6 @@ const Meet = sequelize.define("meet", {
 	meetName: {
 		type: Sequelize.STRING,
 		field: "meetName",
-		unique: true,
 	},
 	subject: {
 		type: Sequelize.STRING,
@@ -20,11 +19,11 @@ const Meet = sequelize.define("meet", {
 	},
 	studentPassword: {
 		type: Sequelize.STRING,
-		field: "password"
+		field: "studentPassword"
 	},
 	teacherPassword: {
 		type: Sequelize.STRING,
-		field: "password"
+		field: "teacherPassword"
 	},
 	createdBy: {
 		type: Sequelize.STRING,

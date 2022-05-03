@@ -403,12 +403,13 @@ const meetControllerTest = () => {
 				});
 	});
 
-	it("Valid meet create", function (done) {
+	it("Invalid meet create w only student password", function (done) {
 		let input = {
 			token: token,
 			meetName: 'Prva parcijala',
 			subject: 'Razvoj programskih rijesenja',
-			createdBy: 'Amar'
+			createdBy: 'Amar',
+			studentPassword: "Doesn't matter its invalid"
 		};
 		chai.request(server)
 			.post("/meet")
@@ -416,44 +417,106 @@ const meetControllerTest = () => {
 			.send(input)
 			.end((err, res) => {
 				assert.isNull(err);
-				let obj = JSON.parse(res.text);
-				assert.equal(obj.meetName, input.meetName);
-				assert.equal(obj.subject, input.subject);
-				assert.equal(obj.createdBy, input.createdBy);
-				assert.equal(res.status, 201);
+				assert.equal(res.status, 400);
+				assert.equal(res.text, `{"message":"You can't make a meet with a student password and no teacher password."}`);
 				done();
 			});
 	});
 
-	it("Valid meet get", function (done) {
+	it("Valid meet create all types", function (done) {
+		let meetTypes = [
+			{
+				token: token,
+				meetName: `Parcijala 1`,
+				subject: 'Razvoj programskih rijesenja',
+				createdBy: 'Amar'
+			},
+			{
+				token: token,
+				meetName: `Parcijala 2`,
+				subject: 'Razvoj programskih rijesenja',
+				createdBy: 'Amar',
+				teacherPassword: 'password1'
+			},
+			{
+				token: token,
+				meetName: `Parcijala 3`,
+				subject: 'Razvoj programskih rijesenja',
+				createdBy: 'Amar',
+				teacherPassword: 'password1',
+				studentPassword: 'password2'
+			},
+		]
+		for (let i = 0; i < 3; ++i)
+			chai.request(server)
+				.post("/meet")
+				.set("content-type", "application/json")
+				.send(meetTypes[i])
+				.end((err, res) => {
+					assert.isNull(err);
+					let obj = JSON.parse(res.text);
+					let input = meetTypes[i];
+					assert.equal(obj.meetName, input.meetName);
+					assert.equal(obj.subject, input.subject);
+					assert.equal(obj.createdBy, input.createdBy);
+					assert.equal(obj.passwordProtected, i != 0);
+					assert.equal(res.status, 201);
+					if (i == 2) done();
+				});
+	});
+
+	it("Duplicate meet create", function (done) {
 		let input = {
 			token: token,
-			meetName: 'Prva parcijala',
+			meetName: 'Parcijala 1',
+			subject: 'Razvoj programskih rijesenja',
+			createdBy: 'Amar',
 		};
 		chai.request(server)
-			.get("/meet")
+			.post("/meet")
 			.set("content-type", "application/json")
 			.send(input)
 			.end((err, res) => {
 				assert.isNull(err);
-				let obj = JSON.parse(res.text).meetInfo;
-				let r = {
-					meetName: 'Prva parcijala',
-					subject: 'Razvoj programskih rijesenja',
-					createdBy: 'Amar'
-				};
-				assert.equal(obj.meetName, r.meetName);
-				assert.equal(obj.subject, r.subject);
-				assert.equal(obj.createdBy, r.createdBy);
-				assert.equal(res.status, 200);
+				assert.equal(res.status, 400);
+				assert.equal(res.text, `{"message":"Meet already exists!"}`);
 				done();
 			});
+	});
+
+	it("Valid meet gets", function (done) {
+		for (let i = 0; i < 3; ++i)
+			chai.request(server)
+				.get("/meet")
+				.set("content-type", "application/json")
+				.send({
+					token: token,
+					meetName: `Parcijala ${i + 1}`,
+					subject: "Razvoj programskih rijesenja"
+				})
+				.end((err, res) => {
+					assert.isNull(err);
+					let obj = JSON.parse(res.text).meetInfo;
+					let r = {
+						meetName: `Parcijala ${i + 1}`,
+						subject: 'Razvoj programskih rijesenja',
+						createdBy: 'Amar',
+						passwordProtected: i != 0
+					};
+					assert.equal(obj.meetName, r.meetName);
+					assert.equal(obj.subject, r.subject);
+					assert.equal(obj.createdBy, r.createdBy);
+					assert.equal(obj.passwordProtected, r.passwordProtected)
+					assert.equal(res.status, 200);
+					if (i == 2) done();
+				});
 	});
 
 	it("Invalid meet get", function (done) {
 		let input = {
 			token: token,
 			meetName: 'Otorinolaringologija',
+			subject: 'Biologija 1'
 		};
 		chai.request(server)
 			.get("/meet")
@@ -467,6 +530,182 @@ const meetControllerTest = () => {
 			});
 	});
 
+	it("Enter meet student", function (done) {
+		let input = {
+			token: token,
+			meetName: `Parcijala 3`,
+			subject: 'Razvoj programskih rijesenja',
+			studentPassword: 'password2',
+			createdBy: 'Amar'
+		};
+		chai.request(server)
+			.get("/meet/enter")
+			.set("content-type", "application/json")
+			.send(input)
+			.end((err, res) => {
+				assert.isNull(err);
+				let { meet, setup } = JSON.parse(res.text);
+				assert.equal(meet.meetName, input.meetName);
+				assert.equal(meet.subject, input.subject);
+				assert.equal(meet.createdBy, input.createdBy);
+				assert.isTrue(meet.passwordProtected);
+				assert.equal(JSON.stringify(setup), JSON.stringify(require("../controllers/setupData/studentMeet.js")));
+				assert.equal(res.status, 200);
+				done();
+			});
+	});
+
+	it("Enter meet teacher", function (done) {
+		let input = {
+			token: token,
+			meetName: `Parcijala 3`,
+			subject: 'Razvoj programskih rijesenja',
+			createdBy: 'Amar',
+			teacherPassword: 'password1'
+		};
+		chai.request(server)
+			.get("/meet/enter")
+			.set("content-type", "application/json")
+			.send(input)
+			.end((err, res) => {
+				assert.isNull(err);
+				let { meet, setup } = JSON.parse(res.text);
+				assert.equal(meet.meetName, input.meetName);
+				assert.equal(meet.subject, input.subject);
+				assert.equal(meet.createdBy, input.createdBy);
+				assert.isTrue(meet.passwordProtected);
+				assert.equal(JSON.stringify(setup), JSON.stringify(require("../controllers/setupData/teacherMeet.js")));
+				assert.equal(res.status, 200);
+				done();
+			});
+	});
+
+	it("Enter meet no password", function (done) {
+		let input = {
+			token: token,
+			meetName: `Parcijala 1`,
+			subject: 'Razvoj programskih rijesenja',
+			createdBy: 'Amar'
+		};
+		chai.request(server)
+			.get("/meet/enter")
+			.set("content-type", "application/json")
+			.send(input)
+			.end((err, res) => {
+				assert.isNull(err);
+				let { meet, setup } = JSON.parse(res.text);
+				assert.equal(meet.meetName, input.meetName);
+				assert.equal(meet.subject, input.subject);
+				assert.equal(meet.createdBy, input.createdBy);
+				assert.isFalse(meet.passwordProtected);
+				assert.equal(JSON.stringify(setup), JSON.stringify(require("../controllers/setupData/teacherMeet.js")));
+				assert.equal(res.status, 200);
+				done();
+			});
+	});
+
+	it("Enter meet no password (but required)", function (done) {
+		let input = {
+			token: token,
+			meetName: `Parcijala 3`,
+			subject: 'Razvoj programskih rijesenja',
+			createdBy: 'Amar'
+		};
+		chai.request(server)
+			.get("/meet/enter")
+			.set("content-type", "application/json")
+			.send(input)
+			.end((err, res) => {
+				assert.isNull(err);
+				assert.equal(res.text, `{"message":"Invalid access data for meet"}`);
+				assert.equal(res.status, 400);
+				done();
+			});
+	});
+
+	it("Invalid password enter", function (done) {
+		let input = {
+			token: token,
+			meetName: `Parcijala 3`,
+			subject: 'Razvoj programskih rijesenja',
+			createdBy: 'Amar',
+			teacherPassword: 'incorrect',
+		};
+		chai.request(server)
+			.get("/meet/enter")
+			.set("content-type", "application/json")
+			.send(input)
+			.end((err, res) => {
+				assert.isNull(err);
+				assert.equal(res.text, `{"message":"Invalid password"}`);
+				assert.equal(res.status, 400);
+				done();
+			});
+	});
+
+	it("End meet invalid password", function (done) {
+		let input = {
+			token: token,
+			meetName: `Parcijala 3`,
+			subject: 'Razvoj programskih rijesenja',
+			createdBy: 'Amar',
+			teacherPassword: 'invalid',
+		};
+		chai.request(server)
+			.put("/meet")
+			.set("content-type", "application/json")
+			.send(input)
+			.end((err, res) => {
+				assert.isNull(err);
+				assert.equal(res.text, '{"message":"Incorrect password for meet: Parcijala 3"}');
+				assert.equal(res.status, 400);
+				done();
+			});
+	});
+
+	it("End meet invalid password", function (done) {
+		let input = {
+			token: token,
+			meetName: `Parcijala 3`,
+			subject: 'Razvoj programskih rijesenja',
+			createdBy: 'Amar',
+			teacherPassword: 'password1',
+		};
+		chai.request(server)
+			.put("/meet")
+			.set("content-type", "application/json")
+			.send(input)
+			.end((err, res) => {
+				assert.isNull(err);
+				const regex = /{\"message\":\"Meet Parcijala 3 has finished at \d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{1,2}:\d{1,2}.\"}/g;
+				let isCorrect = regex.test(res.text);
+				assert.isTrue(isCorrect);
+				assert.equal(res.status, 201);
+				done();
+			});
+	});
+
+	it("Enter finished meet", function (done) {
+		let input = {
+			token: token,
+			meetName: `Parcijala 3`,
+			subject: 'Razvoj programskih rijesenja',
+			createdBy: 'Amar',
+			teacherPassword: 'password1'
+		};
+		chai.request(server)
+			.get("/meet/enter")
+			.set("content-type", "application/json")
+			.send(input)
+			.end((err, res) => {
+				assert.isNull(err);
+				const regex = /{\"message\":\"Meet named Parcijala 3 has finished at \d{4}-\d{1,2}-\d{1,2} \d{1,2}:\d{1,2}:\d{1,2}.\"}/g;
+				let isCorrect = regex.test(res.text);
+				assert.isTrue(isCorrect);
+				assert.equal(res.status, 409);
+				done();
+			});
+	});
 
 }
 
