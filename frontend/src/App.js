@@ -1,25 +1,24 @@
-import logo from './logo.svg';
 import './App.css';
+import Login from "../pages/login/Login.jsx"
+import EnterMeet from '../pages/meetMeet/EnterMeet.jsx';
+import Meet from '../pages/meet/Meet.jsx';
+import ListMeets from '../pages/listMeets/ListMeets.jsx';
+import SearchMeet from '../pages/searchMeet/SearchMeet.jsx';
+import CreateMeet from '../pages/createMeet/CreateMeet.jsx';
+import Error from '../pages/error/Error.jsx'
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+	return (
+		<Routes>
+			<Route exact path="/" element={<Login />} />
+			<Route exact path="/enter" element={<EnterMeet />} />
+			<Route exact path="/meet" element={<Meet />} />
+			<Route exact path="/list-meets" element={<ListMeets />} />
+			<Route exact path="/search" element={<SearchMeet />} />
+			<Route exact path="/create" element={<CreateMeet />} />
+			<Route exact path="/error" element={<Error />} />
+		</Routes>
+	);
 }
 
 export default App;
