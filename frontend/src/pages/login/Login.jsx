@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Spinner from "react-bootstrap/Spinner";
+import Button from "react-bootstrap/Button";
 import "./login.css";
 
 function Login({ setCookie }) {
@@ -8,18 +9,6 @@ function Login({ setCookie }) {
     const [errorMessages, setErrorMessages] = useState({});
     const [isSubmitted, setIsSubmitted] = useState(false);
     const navigate = useNavigate();
-
-    // User Login info
-    const database = [
-        {
-            username: "user1",
-            password: "pass1",
-        },
-        {
-            username: "user2",
-            password: "pass2",
-        },
-    ];
 
     const errors = {
         uname: "invalid username",
@@ -102,7 +91,9 @@ function Login({ setCookie }) {
                         {renderErrorMessage("pass")}
                     </div>
                     <div className="login button-container">
-                        <input className="login" type="submit" />
+                        <Button variant="outline-primary" type="submit">
+                            Submit
+                        </Button>
                     </div>
                 </form>
             </div>
