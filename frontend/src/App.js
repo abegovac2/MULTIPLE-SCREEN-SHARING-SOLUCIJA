@@ -35,7 +35,8 @@ function App() {
 			<Route exact path="/search" element={<SearchMeet />} />
 			<Route exact path="/create" element={<CreateMeet />} />
 			<Route exact path="/error" element={<Error />} />
-		</Routes></>
+		</Routes>
+	</>
 	return (
 		<div className="container">
 			{renderComp}

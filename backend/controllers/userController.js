@@ -62,9 +62,7 @@ const userController = (() => {
 		if (!dbUser) return;
 
 		if (await bcrypt.compare(inUser.password, dbUser.password)) {
-			inUser.id = dbUser.id;
-			inUser.password = dbUser.password;
-			let token = tokenAuth.create(inUser);
+			let token = tokenAuth.create(dbUser);
 			res.status(200).send({ token: token, user: dbUser });
 		} else res.status(409).send({ message: "Unsuccessful login" });
 	};

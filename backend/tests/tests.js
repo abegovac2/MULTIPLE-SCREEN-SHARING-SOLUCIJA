@@ -58,8 +58,8 @@ const allRouteTests = () => {
 				.send({ doesNotMatterNoToken: 123 })
 				.end((err, res) => {
 					assert.isNull(err);
-					assert.equal(res.status, 401);
 					assert.equal(res.text, '{"message":"A token is required for authentication"}');
+					assert.equal(res.status, 401);
 					if (i == routes.length - 1) done();
 				});
 	});
@@ -72,8 +72,8 @@ const allRouteTests = () => {
 				.send({ token: "isNotGud" })
 				.end((err, res) => {
 					assert.isNull(err);
-					assert.equal(res.status, 401);
 					assert.equal(res.text, '{"message":"Invalid Token"}');
+					assert.equal(res.status, 401);
 					if (i == routes.length - 1) done();
 				});
 	});
@@ -91,8 +91,8 @@ const allRouteTests = () => {
 					.send(input)
 					.end((err, res) => {
 						assert.isNull(err);
-						assert.equal(res.status, 400);
 						assert.equal(res.text, `{"message":"Invalid input data for route"}`);
+						assert.equal(res.status, 400);
 						if (i == routes.length - 1) done();
 					});
 
@@ -130,8 +130,8 @@ const userControllerTest = () => {
 				.send(data[i])
 				.end((err, res) => {
 					assert.isNull(err);
-					assert.equal(res.status, 400);
 					assert.equal(res.text, '{"message":"Invalid input data for route"}');
+					assert.equal(res.status, 400);
 					if (i == data.length - 1) done();
 				});
 	});
@@ -148,9 +148,9 @@ const userControllerTest = () => {
 			.send(input)
 			.end((err, res) => {
 				assert.isNull(err);
-				assert.equal(res.status, 201);
 				let obj = JSON.parse(res.text);
 				assert.equal(obj.userName, input.userName);
+				assert.equal(res.status, 201);
 				done();
 			});
 	});
@@ -167,8 +167,8 @@ const userControllerTest = () => {
 			.send(input)
 			.end((err, res) => {
 				assert.isNull(err);
-				assert.equal(res.status, 409);
 				assert.equal(res.text, `{"userName":"User with username: 'Amar' already exist!"}`);
+				assert.equal(res.status, 409);
 				done();
 			});
 	});
@@ -184,12 +184,12 @@ const userControllerTest = () => {
 			.send(input)
 			.end((err, res) => {
 				assert.isNull(err);
-				assert.equal(res.status, 200);
 				let obj = JSON.parse(res.text);
 				assert.isTrue('token' in obj);
 				token = obj.token;
 				assert.equal(obj.user.userName, 'Amar');
 				assert.equal(obj.user.email, 'amar@amar.com');
+				assert.equal(res.status, 200);
 				done();
 			});
 	});
@@ -205,11 +205,11 @@ const userControllerTest = () => {
 			.send(input)
 			.end((err, res) => {
 				assert.isNull(err);
-				assert.equal(res.status, 200);
 				let obj = JSON.parse(res.text);
 				assert.isTrue('token' in obj);
 				assert.equal(obj.user.userName, 'Amar');
 				assert.equal(obj.user.email, 'amar@amar.com');
+				assert.equal(res.status, 200);
 				done();
 			});
 	});
@@ -241,12 +241,12 @@ const userControllerTest = () => {
 			.send(input)
 			.end((err, res) => {
 				assert.isNull(err);
-				assert.equal(res.status, 200);
 				let { allUsers } = JSON.parse(res.text);
 				assert.equal(allUsers.length, 11);
 				assert.isTrue(allUsers.includes("Amar"));
 				for (let i = 0; i < numOfInitUsers; ++i)
 					assert.isTrue(allUsers.includes(`meho${i}`))
+				assert.equal(res.status, 200);
 				done();
 			});
 	});
@@ -262,10 +262,10 @@ const userControllerTest = () => {
 			.send(input)
 			.end((err, res) => {
 				assert.isNull(err);
-				assert.equal(res.status, 200);
 				let user = JSON.parse(res.text);
 				assert.equal(user.userName, 'Amar');
 				assert.equal(user.email, 'amar@amar.com');
+				assert.equal(res.status, 200);
 				done();
 			});
 	});
@@ -281,10 +281,10 @@ const userControllerTest = () => {
 			.send(input)
 			.end((err, res) => {
 				assert.isNull(err);
-				assert.equal(res.status, 200);
 				let user = JSON.parse(res.text);
 				assert.equal(user.userName, 'Amar');
 				assert.equal(user.email, 'amar@amar.com');
+				assert.equal(res.status, 200);
 				done();
 			});
 	});
@@ -301,8 +301,8 @@ const userControllerTest = () => {
 			.send(input)
 			.end((err, res) => {
 				assert.isNull(err);
-				assert.equal(res.status, 404);
 				assert.equal(res.text, `{"message":"Querried user, Fahrudin, does not exist!"}`);
+				assert.equal(res.status, 404);
 				done();
 			});
 	});
@@ -319,8 +319,8 @@ const userControllerTest = () => {
 			.send(input)
 			.end((err, res) => {
 				assert.isNull(err);
-				assert.equal(res.status, 200);
 				assert.equal(res.text, `{"message":"Successfuly deleted user meho0"}`);
+				assert.equal(res.status, 200);
 
 				done();
 			});
@@ -338,8 +338,8 @@ const userControllerTest = () => {
 			.send(input)
 			.end((err, res) => {
 				assert.isNull(err);
-				assert.equal(res.status, 200);
 				assert.equal(res.text, `{"message":"Successfuly deleted user meho1"}`);
+				assert.equal(res.status, 200);
 				done();
 			});
 	});
@@ -356,8 +356,8 @@ const userControllerTest = () => {
 			.send(input)
 			.end((err, res) => {
 				assert.isNull(err);
-				assert.equal(res.status, 409);
 				assert.equal(res.text, `{"message":"Unable to delete user Amar"}`);
+				assert.equal(res.status, 409);
 				done();
 			});
 	});
@@ -417,8 +417,8 @@ const meetControllerTest = () => {
 			.send(input)
 			.end((err, res) => {
 				assert.isNull(err);
-				assert.equal(res.status, 400);
 				assert.equal(res.text, `{"message":"You can't make a meet with a student password and no teacher password."}`);
+				assert.equal(res.status, 400);
 				done();
 			});
 	});
@@ -478,8 +478,8 @@ const meetControllerTest = () => {
 			.send(input)
 			.end((err, res) => {
 				assert.isNull(err);
-				assert.equal(res.status, 400);
 				assert.equal(res.text, `{"message":"Meet already exists!"}`);
+				assert.equal(res.status, 400);
 				done();
 			});
 	});

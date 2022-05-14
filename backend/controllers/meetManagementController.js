@@ -2,7 +2,6 @@ const Meet = require("../models/meet.js");
 const routeWrappers = require("../utils/routeWrappers.js");
 const bcrypt = require("bcrypt");
 const { Op } = require("sequelize");
-const fs = require("fs");
 
 const createMeetController = (() => {
 	const formatMeetObj = (meet) => {
