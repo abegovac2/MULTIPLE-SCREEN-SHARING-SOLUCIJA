@@ -10,11 +10,6 @@ function Login({ setCookie }) {
     const [isSubmitted, setIsSubmitted] = useState(false);
     const navigate = useNavigate();
 
-    const errors = {
-        uname: "invalid username",
-        pass: "invalid password",
-    };
-
     const handleSubmit = async (event) => {
         //Prevent page reload
         event.preventDefault();
