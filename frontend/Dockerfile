@@ -1,5 +1,5 @@
 FROM node:alpine
 COPY . ./frontend
 WORKDIR /frontend
-RUN [ "npm", "install" ]
+RUN [ "npm", "install", "--legacy-peer-deps" ]
 CMD [ "npm", "start" ]

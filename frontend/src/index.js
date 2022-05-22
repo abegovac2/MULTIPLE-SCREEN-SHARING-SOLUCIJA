@@ -9,11 +9,9 @@ import { BrowserRouter } from 'react-router-dom';
 
 ReactDOM.render(
 	<BrowserRouter>
-		<CookiesProvider>
-			<React.StrictMode>
-				<App />
-			</React.StrictMode>
-		</CookiesProvider>
+		<React.StrictMode>
+			<App />
+		</React.StrictMode>
 	</BrowserRouter>,
 	document.getElementById('root')
 );
