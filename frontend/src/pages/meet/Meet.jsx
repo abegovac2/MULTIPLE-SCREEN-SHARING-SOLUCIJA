@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { JitsiMeeting } from "@jitsi/web-sdk";
-import { StudentListeners, TeacherListener } from "./listeners";
+import StudentListeners from "./listeners/studentListener.js";
+import TeacherListener from "./listeners/teacherListener.js";
 
 function Meet({
     domain,
