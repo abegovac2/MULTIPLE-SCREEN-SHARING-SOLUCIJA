@@ -17,14 +17,12 @@ const Attendance = sequelize.define("attendance", {
 		type: Sequelize.INTEGER,
 		field: "userId",
 	},
-	timestamp: {
-		type: Sequelize.DATE,
-		field: "timestamp"
-	},
 	action: {
 		type: Sequelize.ENUM('ENTER', 'EXIT'),
-		field: "ACTION"
+		field: "action"
 	}
+},{
+	createdAt: true,
 });
 
 module.exports = Attendance;

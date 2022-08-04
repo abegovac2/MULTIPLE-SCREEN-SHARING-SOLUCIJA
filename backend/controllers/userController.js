@@ -4,6 +4,7 @@ const routeWrappers = require("../utils/routeWrappers.js");
 const { Op } = require("sequelize");
 
 const User = require("../models/user.js");
+const userRepo = require("../repository/userRepo.js");
 
 const userController = (() => {
 	const userPropCheck = (user, res) => {
@@ -13,6 +14,7 @@ const userController = (() => {
 		return result;
 	};
 
+	/*
 	const findUserInDB = async (user, res) => {
 		user.userName = user.userName ?? '';
 		user.email = user.email ?? '';
@@ -26,11 +28,12 @@ const userController = (() => {
 		});
 
 		if (!dbUser) {
-			res.status(404).send({ message: `Querried user, ${user.userName}, does not exist!` });
+			//res.status(404).send({ message: `Querried user, ${user.userName}, does not exist!` });
 			return null;
 		} else
 			return dbUser.dataValues;
 	};
+	*/
 
 	const register = async (req, res) => {
 		let user = req.body;
@@ -38,7 +41,8 @@ const userController = (() => {
 		const hashPassword = await bcrypt.hash(user.password, 10);
 		user.password = hashPassword;
 		try {
-			await User.create(user);
+			//await User.create(user);
+			await userRepo.createUser(user);
 			res.status(201).send({ userName: user.userName });
 		} catch (e) {
 			res
@@ -58,8 +62,10 @@ const userController = (() => {
 			res.status(400).send({ message: "Invalid input data for route" });
 			return;
 		}
-		let dbUser = await findUserInDB(inUser, res);
-		if (!dbUser) return;
+		//let dbUser = await findUserInDB(inUser, res);
+		let dbUser = await userRepo.findUser(inUser);
+		if (!dbUser) 
+			return res.status(404).send({ message: `Querried user, ${user.userName}, does not exist!` });
 
 		if (await bcrypt.compare(inUser.password, dbUser.password)) {
 			let token = tokenAuth.create(dbUser);
@@ -74,9 +80,15 @@ const userController = (() => {
 
 		if (userPropCheck(inUser, res)) return;
 
-		let dbUser = await findUserInDB(inUser, res);
-		if (!dbUser) return;
+		//let dbUser = await findUserInDB(inUser, res);
+		let dbUser = await userRepo.findUser(inUser);
+		if (!dbUser){ 
+			res.status(404).send({ message: `Querried user, ${inUser.userName}, does not exist!` });
+			return;
+		}
+
 		if (await bcrypt.compare(inUser.password, dbUser.password)) {
+			/*
 			await User.destroy({
 				where: {
 					[Op.or]: [
@@ -85,6 +97,8 @@ const userController = (() => {
 					],
 				},
 			});
+			*/
+			await userRepo.deleteUser(dbUser);
 			res
 				.status(200)
 				.send({ message: `Successfuly deleted user ${dbUser.userName}` });
@@ -105,17 +119,23 @@ const userController = (() => {
 			return;
 		}
 
-		let dbUser = await findUserInDB(inUser, res);
-		if (!dbUser) return;
+		//let dbUser = await findUserInDB(inUser, res);
+		let dbUser = await userRepo.findUser(inUser);
+		if (!dbUser) 
+			return res.status(404).send({ message: `Querried user, ${inUser.userName}, does not exist!` });
+
 
 		res.status(200).send(dbUser);
 	};
 
 	const getAllUsers = async (req, res) => {
+		/*
 		let allUser = await User.findAll({
 			attributes: ["userName"],
 		});
-		res.status(200).send({ allUsers: allUser.map((el) => el.userName) });
+		*/
+		let allUser = await userRepo.getAllUsersByCollumns(["username"]);
+		res.status(200).send({ allUsers: allUser.map((el) => el.username) });
 	};
 
 	return [register, login, deleteUser, getUser, getAllUsers].reduce(

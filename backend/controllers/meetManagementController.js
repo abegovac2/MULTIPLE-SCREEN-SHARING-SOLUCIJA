@@ -1,7 +1,6 @@
-const Meet = require("../models/meet.js");
 const routeWrappers = require("../utils/routeWrappers.js");
 const bcrypt = require("bcrypt");
-const { Op } = require("sequelize");
+const meetRepo = require("../repository/meetRepo.js");
 
 const createMeetController = (() => {
 	const formatMeetObj = (meet) => {
@@ -34,6 +33,7 @@ const createMeetController = (() => {
 			return;
 		}
 		delete meet.token;
+		/*
 		let newMeet = await Meet.findOrCreate({
 			where: {
 				[Op.and]: [
@@ -43,14 +43,19 @@ const createMeetController = (() => {
 			},
 			defaults: meet,
 		});
+		*/
+		let newMeet = await meetRepo.findOrCreateNewMeet(meet);
 		if (newMeet[1]) res.status(201).send(formatMeetObj(newMeet[0].dataValues));
 		else res.status(400).send({ message: "Meet already exists!" });
 	};
 
 	const getAllMeets = async (req, res) => {
+		/*
 		let allMeets = await Meet.findAll({
 			attributes: ["meetName", "subject", "createdBy"],
 		});
+		*/
+		let allMeets = await meetRepo.getAllMeetsByCollumns(["meetName", "subject", "createdBy"]);
 		res.status(200).send({ allMeets: allMeets });
 	};
 
@@ -84,13 +89,15 @@ const createMeetController = (() => {
 	};
 
 	const meetExitsAndFinishedCheck = async (meetName, subject, res, checkEndDate = true) => {
-		let meet = await Meet.findOne({
+		/*let meet = await Meet.findOne({
 			where: {
 				[Op.and]: [
 					{ meetName: meetName },
 					{ subject: subject }]
 			}
 		});
+		*/
+		let meet = await meetRepo.findOneMeet(meetName, subject);
 
 		if (!meet) {
 			res

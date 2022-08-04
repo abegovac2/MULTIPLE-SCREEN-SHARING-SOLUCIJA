@@ -296,7 +296,7 @@ const userControllerTest = () => {
 			password: "netacna sifra"
 		};
 		chai.request(server)
-			.delete("/user")
+			.get("/user")
 			.set("content-type", "application/json")
 			.send(input)
 			.end((err, res) => {
