@@ -96,16 +96,18 @@ function Login({ setCookie }) {
     );
 
     return (
-        <div className="login login-form">
-            {isSubmitted ? (
-                <>
-                    <Spinner animation="grow" size="sm" variant="primary" />
-                    <Spinner animation="grow" size="sm" variant="primary" />
-                    <Spinner animation="grow" size="sm" variant="primary" />
-                </>
-            ) : (
-                renderForm
-            )}
+        <div className="login container">
+            <div className="login login-form">
+                {isSubmitted ? (
+                    <>
+                        <Spinner animation="grow" size="sm" variant="primary" />
+                        <Spinner animation="grow" size="sm" variant="primary" />
+                        <Spinner animation="grow" size="sm" variant="primary" />
+                    </>
+                ) : (
+                    renderForm
+                )}
+            </div>
         </div>
     );
 }

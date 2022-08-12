@@ -1,7 +1,7 @@
 import React from "react";
 
-function ListMeets() {
+function ListUsers() {
     return <></>;
 }
 
-export default ListMeets;
+export default ListUsers;

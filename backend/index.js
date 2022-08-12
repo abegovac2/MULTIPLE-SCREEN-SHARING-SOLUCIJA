@@ -1,5 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
+
 const app = express();
 
 const sequelize = require("./database/database.js");
@@ -9,7 +11,7 @@ const userRoute = require("./routes/userRoute.js");
 const meetManagement = require("./routes/meetManagementRoute.js");
 
 app.use(bodyParser.json());
-
+app.use(cookieParser());
 require('dotenv').config()
 
 app.use(tokenAuth.auth);

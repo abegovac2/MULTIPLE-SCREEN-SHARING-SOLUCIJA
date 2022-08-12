@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { JitsiMeeting } from "@jitsi/web-sdk";
 import StudentListeners from "./listeners/studentListener.js";
 import TeacherListener from "./listeners/teacherListener.js";

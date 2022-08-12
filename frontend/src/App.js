@@ -3,7 +3,7 @@ import { useCookies } from "react-cookie";
 import Login from "./pages/login/Login.jsx"
 import EnterMeet from './pages/enterMeet/EnterMeet.jsx';
 import Meet from './pages/meet/Meet.jsx';
-import ListMeets from './pages/listMeets/ListMeets.jsx';
+import ListUsers from './pages/listUsers/ListUsers.jsx';
 import SearchMeet from './pages/searchMeet/SearchMeet.jsx';
 import CreateMeet from './pages/createMeet/CreateMeet.jsx';
 import Error from './pages/error/Error.jsx'
@@ -31,7 +31,7 @@ function App() {
 			<Route exact path="/" element={<Login />} />
 			<Route exact path="/enter" element={<EnterMeet />} />
 			<Route exact path="/meet" element={<Meet />} />
-			<Route exact path="/list-meets" element={<ListMeets />} />
+			<Route exact path="/list-users" element={<ListUsers />} />
 			<Route exact path="/search" element={<SearchMeet />} />
 			<Route exact path="/create" element={<CreateMeet />} />
 			<Route exact path="/error" element={<Error />} />

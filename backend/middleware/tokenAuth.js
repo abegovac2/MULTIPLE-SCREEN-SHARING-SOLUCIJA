@@ -7,7 +7,7 @@ const tokenAuth = (() => {
 	const auth = async (req, res, next) => {
 		if (!["/user/login", "/user/register"].includes(req.path)) {
 			const token =
-				req.body.token || req.query.token || req.headers["x-access-token"];
+				req.cookies.token || req.body.token || req.query.token || req.headers["x-access-token"];
 
 			if (!token) {
 				return res

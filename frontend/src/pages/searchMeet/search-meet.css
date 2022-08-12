@@ -1,0 +1,25 @@
+.search.container{
+	padding-top: 10%;
+}
+
+.result-field.search{
+	width: 100%;
+	min-height: 100% !important;
+	height: auto;
+	background-color: white;
+	padding: 20px;
+	border-radius: 0 0 0 10px;
+	border-bottom: gray 2px solid;
+	border-left: gray 2px solid;
+	border-top: gray 1px solid;
+	border-right: gray 1px solid
+}
+
+.result-field.search > h3{
+	text-align: center;
+	width: 100%;
+}
+
+.search.button{
+	float: right;
+}
