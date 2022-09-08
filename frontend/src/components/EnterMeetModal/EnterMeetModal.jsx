@@ -5,13 +5,19 @@ import Form from "react-bootstrap/Form";
 import "./enter-meet-modal.css";
 import { useNavigate } from "react-router-dom";
 import Toast from "react-bootstrap/Toast";
-import parseCookie from "../../utils/parseCookie.js";
+import { parseCookie } from "../../utils/ParseCookie";
 
 function EnterMeetModal({ open, setOpen, meetInfo, goToInfo }) {
     const password = useRef(null);
     const navigate = useNavigate();
     const [showT, setShowT] = useState(false);
     const [textT, setTextT] = useState("");
+
+    const formatDate = (dateStr) => {
+        const [date, time] = dateStr.split("T");
+        const [t1, t2] = time.split(".");
+        return `${date} ${t1}`;
+    };
 
     const goToMeet = async () => {
         let res = {};
@@ -121,11 +127,11 @@ function EnterMeetModal({ open, setOpen, meetInfo, goToInfo }) {
                             Created By: {meetInfo.createdBy}
                         </div>
                         <div style={{ textAlign: "center" }}>
-                            Meet started at: {meetInfo.startTime}
+                            Meet started at: {formatDate(meetInfo.startTime)}
                         </div>
                         {!!meetInfo.endTime && (
                             <div style={{ textAlign: "center" }}>
-                                Meet ended at: {meetInfo.endTime}
+                                Meet ended at: {formatDate(meetInfo.endTime)}
                             </div>
                         )}
                         <br />

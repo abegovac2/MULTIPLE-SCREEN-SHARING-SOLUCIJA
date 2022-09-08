@@ -2,9 +2,10 @@ import React from "react";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import "./create-meet.css";
-import { useRef, useState } from "react";
+import { useRef, useState, useContext } from "react";
 import Modal from "react-bootstrap/Modal";
-import parseCookie from "../../utils/parseCookie.js";
+import { parseCookie } from "../../utils/ParseCookie";
+import { Context } from "../../store/NavbarShowContext";
 
 function CreateMeet() {
     let content = [
@@ -67,6 +68,7 @@ function CreateMeet() {
     const [validated, setValidated] = useState(false);
     const [open, setOpen] = useState(false);
     const [text, setText] = useState("");
+    const { user } = useContext(Context);
 
     const handleSubmit = async (event) => {
         const form = event.currentTarget;
@@ -87,7 +89,7 @@ function CreateMeet() {
                 token: token,
                 meetName: content[0].val.current.value,
                 subject: content[1].val.current.value,
-                createdBy: "Amar",
+                createdBy: user.userName,
                 startTime: content[2].val.current.value,
                 endTime: content[3].val.current.value,
                 ...addPass,

@@ -5,7 +5,7 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import "./user-meet-stats-modal.css";
 import Badge from "react-bootstrap/Badge";
-import parseCookie from "../../utils/parseCookie.js";
+import { parseCookie } from "../../utils/ParseCookie";
 
 function UserMeetStatsModal({ open, setOpen, user, meet }) {
     const [attendance, setAttendance] = useState([]);

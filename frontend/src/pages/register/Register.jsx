@@ -2,10 +2,14 @@ import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import Spinner from "react-bootstrap/Spinner";
 import Button from "react-bootstrap/Button";
-import "./login.css";
+import "./register.css";
 import { Context } from "../../store/NavbarShowContext";
 
-function Login() {
+function Register() {
+    function validateEmail(mail) {
+        return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(mail);
+    }
+
     // React States
     const [errorMessages, setErrorMessages] = useState({});
     const [isSubmitted, setIsSubmitted] = useState(false);
@@ -18,38 +22,42 @@ function Login() {
         event.preventDefault();
         setIsSubmitted(true);
 
-        var { uname, pass } = document.forms[0];
+        var { uname, pass, email } = document.forms[0];
 
         uname = uname.value;
         pass = pass.value;
+        email = email.value;
 
-        const params = `/?userName=${uname}&email=${uname}&password=${pass}`;
+        if (!validateEmail(email)) {
+            setErrorMessages({
+                name: "email",
+                message: "Invalid mail format",
+            });
+            setIsSubmitted(false);
+            return;
+        }
+
+        const params = `/?userName=${uname}&email=${email}&password=${pass}`;
         // Find user login info
+        console.log("api link", process.env.REACT_APP_API_LINK);
         const response = await fetch(
-            process.env.REACT_APP_API_LINK + "/user/login" + params,
+            process.env.REACT_APP_API_LINK + "/user/register" + params,
             {
-                method: "GET",
+                method: "POST",
             }
         );
         switch (response.status) {
-            case 200:
+            case 201:
                 const { token, user } = await response.json();
                 document.cookie = `token=${token};path=/`;
                 toggleNavBar();
                 setCurrentUser(user);
                 navigate("/search");
                 break;
-            case 404:
-                setErrorMessages({
-                    name: "uname",
-                    message: "Invalid user name or email",
-                });
-                setIsSubmitted(false);
-                break;
             case 409:
                 setErrorMessages({
-                    name: "pass",
-                    message: "Invalid password for user",
+                    name: "user",
+                    message: "Duplicate user",
                 });
                 setIsSubmitted(false);
                 break;
@@ -72,7 +80,7 @@ function Login() {
             <div className="login form">
                 <form onSubmit={handleSubmit}>
                     <div className="login input-container">
-                        <label>Username or email</label>
+                        <label>Username</label>
                         <input
                             className="login"
                             type="text"
@@ -80,6 +88,16 @@ function Login() {
                             required
                         />
                         {renderErrorMessage("uname")}
+                    </div>
+                    <div className="login input-container">
+                        <label>Email</label>
+                        <input
+                            className="login"
+                            type="text"
+                            name="email"
+                            required
+                        />
+                        {renderErrorMessage("email")}
                     </div>
                     <div className="login input-container">
                         <label>Password </label>
@@ -117,4 +135,4 @@ function Login() {
         </div>
     );
 }
-export default Login;
+export default Register;

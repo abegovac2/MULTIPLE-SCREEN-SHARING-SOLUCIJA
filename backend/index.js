@@ -11,9 +11,6 @@ const tokenAuth = require("./middleware/tokenAuth.js")
 const userRoute = require("./routes/userRoute.js");
 const meetManagement = require("./routes/meetManagementRoute.js");
 
-const meetDB = require("./models/attendance");
-const userDB = require("./models/user");
-const attendanceDB = require("./models/attendance");
 app.use(cors())
 app.use(bodyParser.json());
 app.use(cookieParser());

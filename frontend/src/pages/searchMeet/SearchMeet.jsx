@@ -4,7 +4,7 @@ import Form from "react-bootstrap/Form";
 import "./search-meet.css";
 import MeetItem from "../../components/MeetItem/MeetItem.jsx";
 import { useEffect } from "react";
-import parseCookie from "../../utils/parseCookie.js";
+import { parseCookie } from "../../utils/ParseCookie";
 
 function SearchMeet() {
     const [text, setText] = useState("");

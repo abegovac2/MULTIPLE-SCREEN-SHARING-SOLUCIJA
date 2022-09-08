@@ -17,9 +17,18 @@ const userController = (() => {
 		const hashPassword = await bcrypt.hash(user.password, 10);
 		user.password = hashPassword;
 		try {
-			await userRepo.createUser(user);
-			res.status(201).send({ userName: user.userName });
+			let dbUser = await userRepo.createUser(user);
+			dbUser = dbUser.dataValues;
+			const token = tokenAuth.create(dbUser);
+			res.cookie("token", {
+				token
+			},
+				{
+					maxAge: 60000 * 50,
+				}
+			).status(201).send({ token: token, user: dbUser });
 		} catch (e) {
+			console.log("error", e)
 			res
 				.status(409)
 				.send({
@@ -39,8 +48,10 @@ const userController = (() => {
 			return;
 		}
 		let dbUser = await userRepo.findUser(inUser);
-		if (!dbUser)
-			return res.status(404).send({ message: `Querried user, ${user.userName}, does not exist!` });
+		if (!dbUser) {
+			res.status(404).send({ message: `Querried user, ${inUser.userName}, does not exist!` });
+			return;
+		}
 
 		if (await bcrypt.compare(inUser.password, dbUser.password)) {
 			let token = tokenAuth.create(dbUser);

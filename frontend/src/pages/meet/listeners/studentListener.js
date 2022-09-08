@@ -34,6 +34,8 @@ const StudentListeners = (externalApi, meetId, token1) => {
 	externalApi.addListener("participantJoined", (event) => {
 		console.log("participantJoined = " + event.id);
 		console.log("participantJoined = " + event.displayName);
+		console.log("contentSharingParticipantsChanged");
+		externalApi.pinParticipant(event.id);
 	});
 
 	externalApi.addListener("videoConferenceLeft", (event) => {
@@ -50,4 +52,4 @@ const StudentListeners = (externalApi, meetId, token1) => {
 	});
 };
 
-module.exports = StudentListeners;
+export { StudentListeners };

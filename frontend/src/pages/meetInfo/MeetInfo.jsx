@@ -3,7 +3,7 @@ import Form from "react-bootstrap/Form";
 import "./meet-info.css";
 import UserItem from "../../components/UserItem/UserItem";
 import { useSearchParams } from "react-router-dom";
-import parseCookie from "../../utils/parseCookie.js";
+import { parseCookie } from "../../utils/ParseCookie";
 
 function MeetInfo() {
     const [text, setText] = useState("");

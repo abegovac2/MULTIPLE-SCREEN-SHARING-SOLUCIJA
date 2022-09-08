@@ -1,4 +1,4 @@
-const parseCookie = (cookie) => {
+export const parseCookie = (cookie) => {
 	var nameEQ = "token=";
 	var ca = cookie.split(';');
 	for (var i = 0; i < ca.length; i++) {
@@ -8,5 +8,3 @@ const parseCookie = (cookie) => {
 	}
 	return null;
 }
-
-module.exports = parseCookie

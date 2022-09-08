@@ -2,3 +2,4 @@ node_modules
 testici
 .env
 tests
+.env.production.local
