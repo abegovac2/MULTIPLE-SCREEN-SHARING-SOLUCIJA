@@ -17,20 +17,21 @@ function Login({ setCookie }) {
 
         var { uname, pass } = document.forms[0];
 
-        // Find user login info
-        const response = await fetch(process.env.API_LINK, {
-            method: "GET",
-            data: {
-                userName: uname,
-                email: uname,
-                password: pass,
-            },
-        });
+        uname = uname.value;
+        pass = pass.value;
 
+        const params = `/?userName=${uname}&email=${uname}&password=${pass}`;
+        // Find user login info
+        const response = await fetch(
+            process.env.REACT_APP_API_LINK + "/user/login" + params,
+            {
+                method: "GET",
+            }
+        );
         switch (response.status) {
             case 200:
-                let user = response.body;
-                setCookie(user);
+                let { token } = await response.json();
+                document.cookie = `token=${token};path=/`;
                 navigate("/search");
                 break;
             case 404:

@@ -8,13 +8,11 @@ import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
 
 ReactDOM.render(
-	<CookiesProvider>
-		<BrowserRouter>
-			<React.StrictMode>
-				<App />
-			</React.StrictMode>
-		</BrowserRouter>
-	</CookiesProvider>,
+	<BrowserRouter>
+		<React.StrictMode>
+			<App />
+		</React.StrictMode>
+	</BrowserRouter>,
 	document.getElementById('root')
 );
 

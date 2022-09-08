@@ -1,0 +1,8 @@
+.error.align{
+	display: flex;
+    flex-flow: column;
+    align-self: center;
+    align-items: center;
+    padding-top: 30%;
+    width: 70%;
+}

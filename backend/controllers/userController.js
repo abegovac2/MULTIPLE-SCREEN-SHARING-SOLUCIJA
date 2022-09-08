@@ -30,6 +30,7 @@ const userController = (() => {
 
 	const login = async (req, res) => {
 		let inUser = req.body;
+		console.log("asdfasfadsfasf", inUser);
 
 		if (
 			!(("userName" in inUser || "email" in inUser) && "password" in inUser)
@@ -43,7 +44,10 @@ const userController = (() => {
 
 		if (await bcrypt.compare(inUser.password, dbUser.password)) {
 			let token = tokenAuth.create(dbUser);
-			res.cookie("token", token,
+			delete dbUser.password;
+			res.cookie("token", {
+				token
+			},
 				{
 					maxAge: 60000 * 50,
 				}

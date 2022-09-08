@@ -40,11 +40,11 @@
 */
 
 .container {
-	font-family: sans-serif;
-	display: flex;
-	flex-direction: column;
-	gap: 20px;
-	height: 100vh;
-	font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
-	background-color: #f8f9fd;
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: 100vh;;
+    font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
+    background-color: #f8f9fd;
 }

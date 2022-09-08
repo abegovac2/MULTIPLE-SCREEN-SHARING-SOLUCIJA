@@ -3,33 +3,18 @@ import { useEffect } from "react";
 import { useState } from "react";
 import EnterMeetModal from "../EnterMeetModal/EnterMeetModal";
 import "./meet-item.css";
+import { useNavigate } from "react-router-dom";
 
-function MeetItem({ meetData, routeToMeet }) {
+function MeetItem({ meetData }) {
     const [clicked, setClicked] = useState(false);
-    const [dataInfo, setData] = useState({});
+    const navigate = useNavigate();
 
-    useEffect(() => {
-        async function fetchData() {
-            let dataGet = await fetch(process.env.API_LINK, {
-                method: "GET",
-                data: {
-                    token: document.cookie.token,
-                    meetName: meetData.meetName,
-                    subject: meetData.subject,
-                },
-            });
-            setData({
-                id: 1,
-                meetName: "nesto",
-                passwordProtected: true,
-                createdBy: "Meho Mehic",
-                startTime: "123",
-                endTime: "123",
-            });
-            //setData(dataGet.json());
-        }
-        fetchData();
-    }, [clicked, meetData.meetName, meetData.subject]);
+    const routeToInfo = () => {
+        navigate({
+            pathname: "/meet-info",
+            search: `?data=${btoa(JSON.stringify(meetData))}`,
+        });
+    };
 
     return (
         <>
@@ -50,8 +35,8 @@ function MeetItem({ meetData, routeToMeet }) {
             <EnterMeetModal
                 open={clicked}
                 setOpen={setClicked}
-                meetInfo={dataInfo}
-				goToMeet={routeToMeet}
+                goToInfo={routeToInfo}
+                meetInfo={meetData}
             />
         </>
     );

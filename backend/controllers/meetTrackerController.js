@@ -18,7 +18,7 @@ const meetTrackerController = (
 		}
 
 		const getMeetAttendance = async (req, res) => {
-			let attendance = await attendanceRepo.getMeetAttendance(req.meetId);
+			let attendance = await attendanceRepo.getMeetAttendance(req.body.id);
 			res.status(200).send({
 				attendance
 			})

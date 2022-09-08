@@ -3,9 +3,15 @@ import { Link } from "react-router-dom";
 
 function Error() {
     return (
-        <div>
-            <h1>An error occured</h1>
-            <Link to="/">Retrutn to login</Link>
+        <div className="error align">
+            <div>
+                <br />
+                <br />
+                <h1>An error occured</h1>
+                <br />
+
+                <Link to="/">Return to login</Link>
+            </div>
         </div>
     );
 }

@@ -2,6 +2,7 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://localhost:8080",
   "dependencies": {
     "@jitsi/web-sdk": "^0.2.0",
     "@testing-library/jest-dom": "^5.16.4",

@@ -39,7 +39,18 @@ const createMeetController = (() => {
 	};
 
 	const getAllMeets = async (req, res) => {
-		let allMeets = await meetRepo.getAllMeetsByCollumns(["meetName", "subject", "createdBy"]);
+
+		let allMeets = await meetRepo.getAllMeetsByCollumns(["id", "meetName", "subject", "createdBy", "createdBy", "startTime", "endTime", "studentPassword", "teacherPassword"]);
+		allMeets = allMeets.map((el) => {
+			el = el.dataValues
+			const pass = !!el.studentPassword || !!el.teacherPassword;
+			delete el.studentPassword
+			delete el.teacherPassword
+			return {
+				...el,
+				passwordProtected: pass
+			}
+		})
 		res.status(200).send({ allMeets: allMeets });
 	};
 
@@ -53,25 +64,25 @@ const createMeetController = (() => {
 		meetInfo = formatMeetObj(meetInfo.dataValues);
 		res.status(200).send({ meetInfo: meetInfo });
 	};
-
-	const configurationCheck = async (
-		file,
-		passwordInput,
-		passwordMeet,
-		meet,
-		res,
-		ignorePass = false
-	) => {
-		let isValid = await bcrypt.compare(passwordInput, passwordMeet);
-		if (ignorePass || isValid) {
-			let setup = require(`./setupData/${file}.js`);
-			meet = formatMeetObj(meet.dataValues);
-			res
-				.status(200)
-				.send({ meet: meet, setup: setup });
-		} else res.status(400).send({ message: "Invalid password" });
-	};
-
+	/*
+		const configurationCheck = async (
+			file,
+			passwordInput,
+			passwordMeet,
+			meet,
+			res,
+			ignorePass = false
+		) => {
+			let isValid = 
+			if (ignorePass || isValid) {
+				let setup = require(`./setupData/${file}.js`);
+				meet = formatMeetObj(meet.dataValues);
+				res
+					.status(200)
+					.send({ meet: meet, setup: setup });
+			} return false res.status(400).send({ message: "Invalid password" });
+		};
+	*/
 	const meetExitsAndFinishedCheck = async (meetName, subject, res, checkEndDate = true) => {
 		let meet = await meetRepo.findOneMeet(meetName, subject);
 
@@ -80,51 +91,89 @@ const createMeetController = (() => {
 				.status(404)
 				.send({ message: `Meet named ${meetName} does not exist.` });
 			return null;
-		} else if (checkEndDate && !!meet.endTime) {
+		} else if (checkEndDate && meet.endTime < Date.now()) {
 			res.status(409).send({
 				message: `Meet named ${meetName} has finished at ${formatDateToString(meet.endTime)}.`,
 			});
 			return null;
 		}
 
-		return meet;
+		return meet.dataValues;
 	}
 
 	const enterMeet = async (req, res) => {
-		const { meetName, subject, studentPassword, teacherPassword } = req.body;
+		//const { meetName, subject, studentPassword, teacherPassword } = req.body;
+		const { meetName, subject, password } = req.body;
 
 		if (!meetPropData(['meetName'], req.body, res)) return;
 
 		let meet = await meetExitsAndFinishedCheck(meetName, subject, res);
 		if (!meet) return;
 
-		if (meet.studentPassword && studentPassword)
-			await configurationCheck(
-				"studentMeet",
-				studentPassword,
-				meet.studentPassword,
-				meet,
-				res
-			);
-		else if (meet.teacherPassword && teacherPassword)
-			await configurationCheck(
-				"teacherMeet",
-				teacherPassword,
-				meet.teacherPassword,
-				meet,
-				res
-			);
-		else if ([
-			meet.teacherPassword, studentPassword, meet.studentPassword, teacherPassword
-		].every(el => !el))
-			await configurationCheck(
-				"teacherMeet",
-				'',
-				'',
-				meet,
-				res,
-				true
-			);
+		if (meet.studentPassword && password && await bcrypt.compare(password, meet.studentPassword)) {
+			let setup = {
+				"configOverwrite": {
+					"startWithAudioMuted": true,
+					"disableModeratorIndicator": true,
+					"startScreenSharing": false,
+					"enableEmailInStats": false,
+					"readOnlyName": true,
+					"disableReactions": true,
+					"disablePolls": true,
+					"disableShortcuts": false,
+					"disableSelfView": true,
+					"disableJoinLeaveSounds": true,
+					"disableInviteFunctions": true,
+					"hideAddRoomButton": true,
+					"emoteVideoMenu": {
+						"disableKick": true,
+						"disableGrantModerator": true
+					},
+					"toolbarButtons": [
+						"camera",
+						"chat",
+						"desktop",
+						"hangup",
+						"microphone",
+						"__end"
+					]
+				},
+				"interfaceConfigOverwrite": {
+					"DISABLE_JOIN_LEAVE_NOTIFICATIONS": true,
+					"FILM_STRIP_MAX_HEIGHT": 0
+				}
+			}
+			meet = formatMeetObj(meet);
+			res
+				.status(200)
+				.send({ meet: meet, setup: setup });
+		}
+		else if ((meet.teacherPassword && password && await bcrypt.compare(password, meet.teacherPassword)
+			||
+			[meet.teacherPassword, password, meet.studentPassword
+			].every(el => !el)
+		)) {
+			let setup = {
+				"configOverwrite": {
+					"startWithAudioMuted": true,
+					"disableModeratorIndicator": false,
+					"enableEmailInStats": false,
+					"readOnlyName": true,
+					"disableReactions": true,
+					"disablePolls": true,
+					"disableSelfView": true,
+					"prejoinPageEnabled": false
+				},
+				"interfaceConfigOverwrite": {
+					"DISABLE_JOIN_LEAVE_NOTIFICATIONS": true,
+					"FILM_STRIP_MAX_HEIGHT": 0
+				}
+			}
+			meet = formatMeetObj(meet);
+			res
+				.status(200)
+				.send({ meet: meet, setup: setup });
+		}
 		else
 			res
 				.status(400)
