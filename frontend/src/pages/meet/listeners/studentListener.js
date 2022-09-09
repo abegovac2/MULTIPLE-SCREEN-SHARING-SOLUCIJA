@@ -1,22 +1,30 @@
 const StudentListeners = (externalApi, meetId, token1) => {
-	externalApi.addListener("videoConferenceJoined", async (event) => {
-		externalApi.executeCommand("toggleFilmStrip");
-		//externalApi.executeCommand("toggleShareScreen");
 
+	const sendToBackend = (method) => {
 		const token = `?token=${token1}`;
-		fetch(process.env.REACT_APP_API_LINK + "/meet/attendance/enter" + token, {
+		fetch(process.env.REACT_APP_API_LINK + `/meet/attendance/${method}` + token, {
 			method: "POST",
 			headers: {
 				Accept: "application/json",
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({ meetId })
-		}).then(res => console.log("enter meet", res.status));
+		}).then(res => console.log(`${method} meet`, res.status));
+	}
 
-		let participantId = event.id;
+	var eventID 
+
+	externalApi.addListener("videoConferenceJoined", async (event) => {
+		externalApi.executeCommand("toggleFilmStrip");
+		//externalApi.executeCommand("toggleShareScreen");
+
+		sendToBackend("enter");
+		document.addEventListener("unload", () => sendToBackend("exit"));
+
+		eventID = event.id;
 		externalApi.addListener("contentSharingParticipantsChanged", (event) => {
 			console.log("contentSharingParticipantsChanged");
-			externalApi.pinParticipant(participantId);
+			externalApi.pinParticipant(eventID);
 		});
 
 	});
@@ -40,15 +48,9 @@ const StudentListeners = (externalApi, meetId, token1) => {
 
 	externalApi.addListener("videoConferenceLeft", (event) => {
 		console.log("videoConferenceLeft = " + event.id);
-		const token = `?token=${token1}`;
-		fetch(process.env.REACT_APP_API_LINK + "/meet/attendance/exit" + token, {
-			method: "POST",
-			headers: {
-				Accept: "application/json",
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({ meetId })
-		}).then(res => console.log("exit meet", res.status))
+
+		document.addEventListener("unload", () => { });
+		sendToBackend("exit");
 	});
 };
 
