@@ -94,7 +94,7 @@ function CreateMeet() {
                 endTime: content[3].val.current.value,
                 ...addPass,
             });
-            const res = await fetch(process.env.REACT_APP_API_LINK + "/meet", {
+            const res = await fetch(`${window.location.origin}/api` + "/meet", {
                 method: "POST",
                 headers: {
                     Accept: "application/json",

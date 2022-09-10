@@ -18,7 +18,7 @@ function UserMeetStatsModal({ open, setOpen, user, meet }) {
                 user.id
             }&meetId=${meet.id}`;
             let arr = await fetch(
-                process.env.REACT_APP_API_LINK + "/meet/user-attendance" + data,
+                `${window.location.origin}/api` + "/meet/user-attendance" + data,
                 {
                     method: "GET",
                 }

@@ -13,10 +13,10 @@ function SearchMeet() {
 
     useEffect(() => {
         async function fetchData() {
-            console.log("imal te", process.env.REACT_APP_API_LINK);
+            console.log("imal te", `${window.location.origin}/api`);
 
             const token = `?token=${parseCookie(document.cookie)}`;
-            fetch(process.env.REACT_APP_API_LINK + "/meet/list" + token, {
+            fetch(`${window.location.origin}/api` + "/meet/list" + token, {
                 method: "GET",
             })
                 .then((res) => res.json())

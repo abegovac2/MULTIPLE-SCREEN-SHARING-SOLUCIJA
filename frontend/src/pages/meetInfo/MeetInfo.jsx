@@ -18,7 +18,7 @@ function MeetInfo() {
                 data1.id
             }`;
             let list = await fetch(
-                process.env.REACT_APP_API_LINK + "/meet/attendance" + data,
+                `${window.location.origin}/api` + "/meet/attendance" + data,
                 {
                     method: "GET",
                 }

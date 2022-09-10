@@ -2,7 +2,7 @@ const StudentListeners = (externalApi, meetId, token1) => {
 
 	const sendToBackend = (method) => {
 		const token = `?token=${token1}`;
-		fetch(process.env.REACT_APP_API_LINK + `/meet/attendance/${method}` + token, {
+		fetch(`${window.location.origin}/api` + `/meet/attendance/${method}` + token, {
 			method: "POST",
 			headers: {
 				Accept: "application/json",

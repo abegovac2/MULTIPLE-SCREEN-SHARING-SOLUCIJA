@@ -22,11 +22,11 @@ function Login() {
 
         uname = uname.value;
         pass = pass.value;
-
+        console.log("imal te", `${window.location.origin}/api`);
         const params = `/?userName=${uname}&email=${uname}&password=${pass}`;
         // Find user login info
         const response = await fetch(
-            process.env.REACT_APP_API_LINK + "/user/login" + params,
+            `${window.location.origin}/api` + "/user/login" + params,
             {
                 method: "GET",
             }

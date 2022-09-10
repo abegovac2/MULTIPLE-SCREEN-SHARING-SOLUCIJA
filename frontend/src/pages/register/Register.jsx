@@ -39,9 +39,9 @@ function Register() {
 
         const params = `/?userName=${uname}&email=${email}&password=${pass}`;
         // Find user login info
-        console.log("api link", process.env.REACT_APP_API_LINK);
+        console.log("api link", `${window.location.origin}/api`);
         const response = await fetch(
-            process.env.REACT_APP_API_LINK + "/user/register" + params,
+            `${window.location.origin}/api` + "/user/register" + params,
             {
                 method: "POST",
             }

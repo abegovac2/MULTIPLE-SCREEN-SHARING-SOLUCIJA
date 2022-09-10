@@ -28,7 +28,7 @@ function EnterMeetModal({ open, setOpen, meetInfo, goToInfo }) {
             res = { status: 444 };
         } else if (!!meetInfo.passwordProtected) {
             res = await fetch(
-                process.env.REACT_APP_API_LINK +
+                `${window.location.origin}/api` +
                     `/meet/enter?token=${parseCookie(
                         document.cookie
                     )}&meetName=${meetInfo.meetName}&subject=${
@@ -40,7 +40,7 @@ function EnterMeetModal({ open, setOpen, meetInfo, goToInfo }) {
             );
         } else {
             res = await fetch(
-                process.env.REACT_APP_API_LINK +
+                `${window.location.origin}/api` +
                     `/meet/enter?token=${parseCookie(
                         document.cookie
                     )}&meetName=${meetInfo.meetName}&subject=${
