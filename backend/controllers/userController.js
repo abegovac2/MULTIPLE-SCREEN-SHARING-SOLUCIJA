@@ -1,4 +1,4 @@
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const tokenAuth = require("../middleware/tokenAuth.js");
 const routeWrappers = require("../utils/routeWrappers.js");
 const userRepo = require("../repository/userRepo.js");

@@ -1,5 +1,5 @@
 const routeWrappers = require("../utils/routeWrappers.js");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const meetRepo = require("../repository/meetRepo.js");
 
 const createMeetController = (() => {

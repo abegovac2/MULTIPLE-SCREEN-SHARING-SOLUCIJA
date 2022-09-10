@@ -3,7 +3,7 @@ COPY . ./frontend
 WORKDIR /frontend
 RUN [ "npm", "install", "--legacy-peer-deps" ]
 RUN [ "npm", "i", "-g", "serve"]
-ENV REACT_APP_API_LINK=http://localhost:8080
+ENV REACT_APP_API_LINK=http://localhost:8000/api
 RUN [ "npm", "run", "build" ]
 CMD ["serve", "-s", "build"]
 #CMD [ "npm", "start" ]
