@@ -11,7 +11,7 @@ const tokenAuth = (() => {
 		req.body = { ...req.body, ...req.query };
 		console.log("Ulaz", req.body);
 
-		if (!["/user/login", "/user/register", "/user/login/", "/user/register/"].includes(req.path)) {
+		if (!["/api/user/login", "/api/user/register", "/api/user/login/", "/api/user/register/"].includes(req.path)) {
 			const token =
 				req.cookies.token || req.body.token || req.query.token || req.headers["x-access-token"];
 

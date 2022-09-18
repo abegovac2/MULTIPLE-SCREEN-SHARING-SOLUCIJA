@@ -51,15 +51,15 @@ function EnterMeetModal({ open, setOpen, meetInfo, goToInfo }) {
                 }
             );
         }
-        if (res.status == 400) {
+        if (res.status === 400) {
             setTextT("Invalid access data for meet");
             setShowT(true);
-        } else if (res.status == 444) {
+        } else if (res.status === 444) {
             setTextT("Missing password");
             setShowT(true);
         } else {
             let setup = await res.json();
-            if (res.status == 409) {
+            if (res.status === 409) {
                 setTextT(setup.message);
                 setShowT(true);
             } else {

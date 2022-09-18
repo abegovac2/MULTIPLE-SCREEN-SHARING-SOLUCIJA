@@ -1,6 +1,5 @@
 import * as React from "react";
 import { useState } from "react";
-import EnterMeetModal from "../EnterMeetModal/EnterMeetModal";
 import UserMeetStatsModal from "../UserMeetStatsModel/UserMeetStatsModal";
 import "./user-item.css";
 

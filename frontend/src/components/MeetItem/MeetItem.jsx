@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useEffect } from "react";
 import { useState } from "react";
 import EnterMeetModal from "../EnterMeetModal/EnterMeetModal";
 import "./meet-item.css";

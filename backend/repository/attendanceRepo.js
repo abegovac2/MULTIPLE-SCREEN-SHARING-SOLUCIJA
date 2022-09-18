@@ -17,24 +17,10 @@ const attendanceRepo = (
 
 
 		const getMeetAttendance = async (meetId) => {
-			/*
-			let allAttendedUsers = await User.findAll({
-				attributes: ["username"],
-				include: [{
-					model: Attendance,
-					where: {
-						userId: User.id,
-						meetId: meetId
-					}
-				}]
-			});
-
-			return allAttendedUsers.map(el => el.dataValues);
-			*/
 			let allAttendedUsers = await sequelize.query(`
-			SELECT Max(u.id) as 'id', u.userName as 'userName'
-			FROM users u JOIN attendances a ON u.id = a.userId
-			WHERE meetId = ${meetId}
+			SELECT Max(u.id) AS id, u."userName" AS "userName"
+			FROM users u JOIN attendances a ON u.id = a."userId"
+			WHERE a."meetId" = ${meetId}
 			GROUP BY u.id;`,
 				{ type: QueryTypes.SELECT });
 			return allAttendedUsers;

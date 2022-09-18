@@ -1,0 +1,7 @@
+Dockerfile
+heroku.yml
+testici
+tests
+.dockerignore
+.env
+.env.production.local

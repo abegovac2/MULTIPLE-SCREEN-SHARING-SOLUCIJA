@@ -7,8 +7,9 @@ services:
       - frontend
     volumes:
       - './templates/nginx.conf:/etc/nginx/nginx.conf:ro'
+      - './ssl:/ssl:ro'
     ports:
-      - '8000:80'
+      - '8000:443'
   mysqldb:
     platform: linux/x86_64
     image: 'mysql:5.7'
