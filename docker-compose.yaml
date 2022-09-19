@@ -10,21 +10,22 @@ services:
       - './ssl:/ssl:ro'
     ports:
       - '8000:443'
-  mysqldb:
-    platform: linux/x86_64
-    image: 'mysql:5.7'
+  postgresql:
+    image: postgres:10
     restart: unless-stopped
-    environment:
-      - MYSQL_ROOT_PASSWORD=password
-      - MYSQL_DATABASE=MeetDB
     ports:
-      - 3306
+      - 5432:5432
+    environment:
+      POSTGRES_USER: demouser
+      POSTGRES_PASSWORD: DemoPa$$$$
+      POSTGRES_DB: demodb
     volumes:
-      - 'mysqldb:/var/lib/mysql'
+      - db:/var/lib/postgresql
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "mysqldb"]
-      timeout: 20s
-      retries: 10
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   backend:
     depends_on:
       mysqldb:

@@ -1,4 +1,4 @@
-const StudentListeners = (externalApi, meetId, token1) => {
+const StudentListeners = (externalApi, meetId, token1, navigate) => {
 
 	const sendToBackend = (method) => {
 		const token = `?token=${token1}`;
@@ -12,14 +12,34 @@ const StudentListeners = (externalApi, meetId, token1) => {
 		}).then(res => console.log(`${method} meet`, res.status));
 	}
 
-	var eventID 
+	var sendToBackendExit = (function() {
+		var e = false;
+		return function() {
+			if (!e) {
+				e = true;
+				sendToBackend("exit")
+			}
+		};
+	})();
+
+	const func = (e) => sendToBackendExit();
+
+	const setupEventListeners = (enable) => {
+		const events = ["popstate"];
+		if(enable) events.forEach((e) => window.addEventListener(e, func))
+		else events.forEach((e) => window.removeEventListener(e, func))
+	}
+
+	var eventID
 
 	externalApi.addListener("videoConferenceJoined", async (event) => {
 		externalApi.executeCommand("toggleFilmStrip");
 		//externalApi.executeCommand("toggleShareScreen");
 
 		sendToBackend("enter");
-		document.addEventListener("unload", () => sendToBackend("exit"));
+		//window.addEventListener("unload", () => sendToBackend("exit"));
+
+		setupEventListeners(true);
 
 		eventID = event.id;
 		externalApi.addListener("contentSharingParticipantsChanged", (event) => {
@@ -49,8 +69,10 @@ const StudentListeners = (externalApi, meetId, token1) => {
 	externalApi.addListener("videoConferenceLeft", (event) => {
 		console.log("videoConferenceLeft = " + event.id);
 
-		document.addEventListener("unload", () => { });
-		sendToBackend("exit");
+		//window.addEventListener("unload", () => { });
+		setupEventListeners(false);
+		sendToBackendExit();
+		navigate("/search");
 	});
 };
 
